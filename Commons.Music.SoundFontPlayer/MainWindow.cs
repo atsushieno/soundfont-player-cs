@@ -12,13 +12,14 @@ namespace Commons.Music.SoundFontPlayer
 		{
 			Width = 800;
 			Height = 800;
-			this.Closed += (_, __) => Application.Exit ();
+			this.Closed += (o, e) => Application.Exit ();
 
 			model = new Model ();
 			
-			SetupWindowContent ();
-			
-			model.Initialize ();
+			Application.InvokeAsync (() => {
+				SetupWindowContent ();
+				model.Initialize ();
+			});
 		}
 
 		Model model;
@@ -31,20 +32,21 @@ namespace Commons.Music.SoundFontPlayer
 
 			top.PackStart (CreateSoundFontListPanel (), true);
 
-			/*
-			var lv = new ListView ();
-			var noteCol = new DataField<int> ();
-			var nameCol = new DataField<string> ();
-			var store = new ListStore (noteCol, nameCol);
-			lv.DataSource = store;
-			lv.Columns.Add ("No.", noteCol);
-			lv.Columns.Add ("Name", nameCol);
-			Action updateSoundFonts = () => {
-				store.Clear ();
-			};			
-			*/
-			
+			string [] noteNames = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
+			var keys = new HBox ();
+			for (int i = 24; i < 48; i++) {
+				var b = new Button ($"{i / 12}{noteNames [i % 12]}");
+				b.Clicked += (o, e) => PlayNote (i);
+				keys.PackStart (b);
+			}
+			top.PackStart (keys);
+
 			Content = top;
+		}
+
+		void PlayNote (int key)
+		{
+			model.PlayNote (key, 2000);
 		}
 		
 		Widget CreateSoundFontListPanel ()
@@ -90,6 +92,16 @@ namespace Commons.Music.SoundFontPlayer
 			};
 			model.SoundFontListUpdated += updateSoundFonts;
 
+			sfList.SelectionChanged += (o, e) => {
+				var iter = store.GetNavigatorAt (sfList.SelectedRow);
+				model.UpdateSelectedInstrument (new Model.SoundFontSelection {
+					File = iter.GetValue (fileCol),
+					Patch = iter.GetValue (patchCol),
+					Bank = iter.GetValue (bankCol),
+					Instrument = iter.GetValue (progNumCol)
+				});
+			};
+			
 			return sfList;
 		}
 		
