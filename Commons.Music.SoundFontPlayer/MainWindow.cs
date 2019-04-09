@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 using NAudio.SoundFont;
 using Xwt;
 using Xwt.WPFBackend;
@@ -18,7 +19,9 @@ namespace Commons.Music.SoundFontPlayer
 			
 			Application.InvokeAsync (() => {
 				SetupWindowContent ();
-				model.Initialize ();
+				Application.InvokeAsync (() => {
+					model.Initialize ();
+				});
 			});
 		}
 
@@ -48,7 +51,9 @@ namespace Commons.Music.SoundFontPlayer
 		{
 			model.PlayNote (key, 2000);
 		}
-		
+
+		Action update_soundfonts;
+
 		Widget CreateSoundFontListPanel ()
 		{
 			var sfList =new TreeView () { UseAlternatingRowColors = true, AnimationsEnabled = true };
@@ -70,19 +75,22 @@ namespace Commons.Music.SoundFontPlayer
 			sfList.Columns.Add ("Name/Preset", namePresetCol);
 			sfList.Columns.Add ("Prog.No.", progNumCol);
 			sfList.Columns.Add ("Inst", instCol);
-			Action updateSoundFonts = () => {
+			
+			update_soundfonts = () => {
 				store.Clear ();
-				foreach (var sf in model.LoadedSoundFonts.Where (_ => _.Entity.Value != null)) {
-					foreach (var preset in sf.Entity.Value.Presets.OrderBy (p => p.Bank).ThenBy (p => p.PatchNumber)) {
+				foreach (var sf in model.LoadedSoundFonts)
+					sf.Load ();
+				foreach (var sf in model.LoadedSoundFonts.Where (_ => _.Entity != null)) {
+					foreach (var preset in sf.Entity.Presets.OrderBy (p => p.Bank).ThenBy (p => p.PatchNumber)) {
 						foreach (var gen in preset.Zones.SelectMany (z => z.Generators.Where (g => g.GeneratorType == GeneratorEnum.Instrument).OrderBy (g => g.HighByteAmount).ThenBy (g => g.LowByteAmount))) {
 							var node = store.AddNode ();
 							node.SetValues (
 								fileCol, sf.FullPath, nameCol,
-								sf.Entity.Value.FileInfo.BankName,
+								sf.Entity.FileInfo.BankName,
 								bankCol, preset.Bank,
 								patchCol, preset.PatchNumber,
 								presetCol, preset.Name,
-								namePresetCol, sf.Entity.Value.FileInfo.BankName + " / " + preset.Name,
+								namePresetCol, sf.Entity.FileInfo.BankName + " / " + preset.Name,
 								progNumCol, gen.HighByteAmount * 0x100 + gen.LowByteAmount,
 								instCol, gen.Instrument?.Name);
 							node.MoveToLastSibling ();
@@ -90,7 +98,7 @@ namespace Commons.Music.SoundFontPlayer
 					}
 				}
 			};
-			model.SoundFontListUpdated += updateSoundFonts;
+			model.SoundFontListUpdated += update_soundfonts;
 
 			sfList.SelectionChanged += (o, e) => {
 				var iter = store.GetNavigatorAt (sfList.SelectedRow);

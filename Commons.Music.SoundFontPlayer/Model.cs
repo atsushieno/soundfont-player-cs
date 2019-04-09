@@ -3,14 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.Serialization.Json;
 using System.Threading.Tasks;
 using Commons.Music.Midi;
-using NFluidsynth;
 using NFluidsynth.MidiManager;
-using MidiEvent = Commons.Music.Midi.MidiEvent;
-using SoundFont = NAudio.SoundFont.SoundFont;
+using NAudio.SoundFont;
 
 namespace Commons.Music.SoundFontPlayer
 {
@@ -18,14 +15,14 @@ namespace Commons.Music.SoundFontPlayer
 	{
 		const string config_filename = "soundfont-player.cfg";
 
-		public void Initialize ()
+		public async Task Initialize ()
 		{
-			LoadUserSettings ();
+			await LoadUserSettings ();
 		}
 
 		public UserSettings UserSettings { get; private set; } = new UserSettings ();
 
-		void LoadUserSettings ()
+		async Task LoadUserSettings ()
 		{
 			using (var ds = IsolatedStorageFile.GetUserStoreForAssembly ()) {
 				if (!ds.FileExists (config_filename))
@@ -37,7 +34,7 @@ namespace Commons.Music.SoundFontPlayer
 							.ReadObject (stream);
 				}
 			}
-			OnSoundFontPathsUpdated ();
+			await OnSoundFontPathsUpdated ();
 		}
 
 		void SaveUserSettings ()
@@ -56,16 +53,16 @@ namespace Commons.Music.SoundFontPlayer
 			
 			public bool IsInvalid { get; set; }
 
-			public Lazy<SoundFont> Entity => new Lazy<SoundFont> (() => {
+			public SoundFont Entity { get; set; }
 
+			public async Task Load ()
+			{
 				try {
-					return new NAudio.SoundFont.SoundFont (FullPath);
-				}
-				catch (Exception ex) {
+					Entity = new SoundFont (FullPath);
+				} catch (Exception ex) {
 					IsInvalid = true;
-					return null;
 				}
-			});
+			}
 		}
 
 		public IList<SoundFontEntity> LoadedSoundFonts { get; private set; } = new List<SoundFontEntity> ();
@@ -95,7 +92,7 @@ namespace Commons.Music.SoundFontPlayer
 			}
 		}
 
-		void OnSoundFontPathsUpdated ()
+		async Task OnSoundFontPathsUpdated ()
 		{
 			if (SoundFontPathsUpdated != null)
 				SoundFontPathsUpdated ();
@@ -140,7 +137,8 @@ namespace Commons.Music.SoundFontPlayer
 				output = access.OpenOutputAsync (access.Outputs.First ().Id).Result;
 			}
 
-			output.Send (new byte[] {MidiEvent.CC, MidiCC.BankSelect, (byte) item.Bank}, 0, 3, 0);
+			output.Send (new byte[] {MidiEvent.CC, MidiCC.BankSelect, (byte) (item.Bank / 0x80)}, 0, 3, 0);
+			output.Send (new byte[] {MidiEvent.CC, MidiCC.BankSelectLsb, (byte) (item.Bank % 0x80)}, 0, 3, 0);
 			output.Send (new byte[] {0xC0, (byte) item.Instrument}, 0, 2, 0);
 			output.Send (new byte[] {MidiEvent.CC, MidiCC.Volume, 120}, 0, 3, 0);
 		}
