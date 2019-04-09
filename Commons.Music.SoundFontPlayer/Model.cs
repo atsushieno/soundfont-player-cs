@@ -20,6 +20,12 @@ namespace Commons.Music.SoundFontPlayer
 			await LoadUserSettings ();
 		}
 
+		public void Terminate ()
+		{
+			if (output != null)
+				output.CloseAsync ();
+		}
+
 		public UserSettings UserSettings { get; private set; } = new UserSettings ();
 
 		async Task LoadUserSettings ()
@@ -137,10 +143,12 @@ namespace Commons.Music.SoundFontPlayer
 				output = access.OpenOutputAsync (access.Outputs.First ().Id).Result;
 			}
 
-			output.Send (new byte[] {MidiEvent.CC, MidiCC.BankSelect, (byte) (item.Bank / 0x80)}, 0, 3, 0);
-			output.Send (new byte[] {MidiEvent.CC, MidiCC.BankSelectLsb, (byte) (item.Bank % 0x80)}, 0, 3, 0);
-			output.Send (new byte[] {0xC0, (byte) item.Instrument}, 0, 2, 0);
-			output.Send (new byte[] {MidiEvent.CC, MidiCC.Volume, 120}, 0, 3, 0);
+			int ch = item.Instrument >= 128 ? 9 : 0;
+
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelect, (byte) (item.Bank / 0x80)}, 0, 3, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelectLsb, (byte) (item.Bank % 0x80)}, 0, 3, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.Program + ch), (byte) (item.Instrument % 128)}, 0, 2, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.Volume, 120}, 0, 3, 0);
 		}
 
 		bool [] keyon_flags = new bool[128];
@@ -149,15 +157,17 @@ namespace Commons.Music.SoundFontPlayer
 		{
 			if (output == null)
 				return;
+
+			int ch = SelectedSoundItem.Instrument >= 128 ? 9 : 0;
 			
 			if (keyon_flags [key])
-				output.Send (new byte[]{0x90, (byte) key, 0}, 0, 3, 0);
-			output.Send (new byte[]{0x90, (byte) key, 120}, 0, 3, 0);
+				output.Send (new byte[]{(byte) (MidiEvent.NoteOn + ch), (byte) key, 0}, 0, 3, 0);
+			output.Send (new byte[]{(byte) (MidiEvent.NoteOn + ch), (byte) key, 120}, 0, 3, 0);
 			keyon_flags [key] = true;
 			if (lengthInMilliseconds > 0)
 				Task.Run (() => {
 					Task.Delay (lengthInMilliseconds);
-					output.Send (new byte[]{0x90, (byte) key, 0}, 0, 3, 0);
+					output.Send (new byte[]{(byte)(MidiEvent.NoteOn + ch), (byte) key, 0}, 0, 3, 0);
 					keyon_flags [key] = false;
 				});
 		}

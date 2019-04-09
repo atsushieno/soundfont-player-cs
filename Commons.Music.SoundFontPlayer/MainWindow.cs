@@ -13,7 +13,10 @@ namespace Commons.Music.SoundFontPlayer
 		{
 			Width = 800;
 			Height = 800;
-			this.Closed += (o, e) => Application.Exit ();
+			this.Closed += (o, e) => {
+				model.Terminate ();
+				Application.Exit ();
+			};
 
 			model = new Model ();
 			
