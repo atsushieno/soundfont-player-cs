@@ -100,6 +100,15 @@ namespace Commons.Music.SoundFontPlayer
 					sf.Load ();
 				foreach (var sf in model.LoadedSoundFonts.Where (_ => _.Entity != null)) {
 					foreach (var preset in sf.Entity.Presets.OrderBy (p => p.Bank).ThenBy (p => p.PatchNumber)) {
+						var node = store.AddNode ();
+						node.SetValues (
+							fileCol, sf.FullPath, 
+							nameCol, sf.Entity.FileInfo.BankName,
+							bankCol, preset.Bank,
+							patchCol, preset.PatchNumber,
+							presetCol, preset.Name,
+							namePresetCol, sf.Entity.FileInfo.BankName + " / " + preset.Name);
+						/*
 						foreach (var gen in preset.Zones.SelectMany (z => z.Generators.Where (g => g.GeneratorType == GeneratorEnum.Instrument).OrderBy (g => g.HighByteAmount).ThenBy (g => g.LowByteAmount))) {
 							var node = store.AddNode ();
 							node.SetValues (
@@ -111,8 +120,8 @@ namespace Commons.Music.SoundFontPlayer
 								namePresetCol, sf.Entity.FileInfo.BankName + " / " + preset.Name,
 								progNumCol, gen.HighByteAmount * 0x100 + gen.LowByteAmount,
 								instCol, gen.Instrument?.Name);
-							node.MoveToLastSibling ();
 						}
+						*/
 					}
 				}
 			};
@@ -124,7 +133,6 @@ namespace Commons.Music.SoundFontPlayer
 					File = iter.GetValue (fileCol),
 					Patch = iter.GetValue (patchCol),
 					Bank = iter.GetValue (bankCol),
-					Instrument = iter.GetValue (progNumCol)
 				});
 			};
 			

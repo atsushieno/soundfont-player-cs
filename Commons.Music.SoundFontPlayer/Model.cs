@@ -114,7 +114,6 @@ namespace Commons.Music.SoundFontPlayer
 			public string File { get; set; }
 			public int Bank { get; set; }
 			public int Patch { get; set; }
-			public int Instrument { get; set; }
 		}
 
 		public SoundFontSelection SelectedSoundItem { get; set; }
