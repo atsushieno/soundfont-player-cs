@@ -11,8 +11,9 @@ namespace Commons.Music.SoundFontPlayer
 	{
 		public MainWindow ()
 		{
+			Title = "NFluidsynth SoundFont Player";
 			Width = 800;
-			Height = 800;
+			Height = 600;
 			this.Closed += (o, e) => {
 				model.Terminate ();
 				Application.Exit ();
@@ -23,7 +24,7 @@ namespace Commons.Music.SoundFontPlayer
 			Application.InvokeAsync (() => {
 				SetupWindowContent ();
 				Application.InvokeAsync (() => {
-					model.Initialize ();
+					model.Initialize ().Wait ();
 				});
 			});
 		}
@@ -33,21 +34,32 @@ namespace Commons.Music.SoundFontPlayer
 		void SetupWindowContent ()
 		{
 			var top = new VBox ();
-
+			
 			top.PackStart (CreateSoundFontFoldersPanel ());
 
-			top.PackStart (CreateSoundFontListPanel (), true);
+			var sub = new HBox ();
+			top.PackStart (sub);
 
+			sub.PackStart (CreateSoundFontListPanel (), true);
+
+			var keyRows = new VBox ();
+			sub.PackStart (keyRows);
+			
 			string [] noteNames = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
-			for (int r = 0; r < 4; r++) {
+			int nRows = 13;
+			int nCols = 10;
+			for (int r = 0; r < nRows; r++) {
 				var keys = new HBox ();
-				for (int i = 0; i < 24; i++) {
-					var b = new Button ($"{i / 12 + 2 * r}{noteNames [i % 12]}") {Tag = r * 24 + i, WidthRequest = 48};
+				for (int i = 0; i < nCols; i++) {
+					int key = r * nCols + i;
+					if (key >= 128)
+						break;
+					var b = new Button ($"{key / 12}{noteNames [key % 12]}") {Tag = key, WidthRequest = 36};
 					b.Clicked += (o, e) => PlayNote ((int) b.Tag);
 					keys.PackStart (b);
 				}
 
-				top.PackStart (keys);
+				keyRows.PackStart (keys);
 			}
 
 			Content = top;

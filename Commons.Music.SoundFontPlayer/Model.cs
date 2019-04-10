@@ -155,7 +155,8 @@ namespace Commons.Music.SoundFontPlayer
 			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelect, (byte) (item.Bank / 0x80)}, 0, 3, 0);
 			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelectLsb, (byte) (item.Bank % 0x80)}, 0, 3, 0);
 			output.Send (new byte[] {(byte) (MidiEvent.Program + ch), (byte) (item.Patch % 128)}, 0, 2, 0);
-			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.Volume, 120}, 0, 3, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.Volume, 127}, 0, 3, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.Expression, 127}, 0, 3, 0);
 		}
 
 		bool [] keyon_flags = new bool[128];
@@ -174,7 +175,8 @@ namespace Commons.Music.SoundFontPlayer
 			if (lengthInMilliseconds > 0)
 				Task.Run (() => {
 					Task.Delay (lengthInMilliseconds);
-					output.Send (new byte[]{(byte)(MidiEvent.NoteOn + ch), (byte) key, 0}, 0, 3, 0);
+					if (keyon_flags [key]) // might be already turned off
+						output.Send (new byte[]{(byte)(MidiEvent.NoteOn + ch), (byte) key, 0}, 0, 3, 0);
 					keyon_flags [key] = false;
 				});
 		}
