@@ -12,8 +12,8 @@ namespace Commons.Music.SoundFontPlayer
 		public MainWindow ()
 		{
 			Title = "NFluidsynth SoundFont Player";
-			Width = 800;
-			Height = 600;
+			Width = 900;
+			Height = 700;
 			this.Closed += (o, e) => {
 				model.Terminate ();
 				Application.Exit ();
@@ -37,13 +37,15 @@ namespace Commons.Music.SoundFontPlayer
 			
 			top.PackStart (CreateSoundFontFoldersPanel ());
 
-			var sub = new HBox ();
-			top.PackStart (sub);
+			var sub = new HBox () { ExpandVertical = true, ExpandHorizontal = true};
+			top.PackStart (sub, true);
 
 			sub.PackStart (CreateSoundFontListPanel (), true);
 
-			var keyRows = new VBox ();
-			sub.PackStart (keyRows);
+			var panel = new ScrollView () { ExpandVertical = true, ExpandHorizontal = true };
+			var keyRows = new VBox () { ExpandVertical = true, ExpandHorizontal = true };
+			panel.Content = keyRows;
+			sub.PackStart (panel, true);
 			
 			string [] noteNames = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
 			int nRows = 13;
@@ -81,9 +83,7 @@ namespace Commons.Music.SoundFontPlayer
 			var presetCol = new DataField<string> ();
 			var namePresetCol = new DataField<string> ();
 			var patchCol = new DataField<int> ();
-			var progNumCol = new DataField<int> ();
-			var instCol = new DataField<string> ();
-			var store = new TreeStore (fileCol, nameCol, bankCol, patchCol, presetCol, namePresetCol, progNumCol, instCol);
+			var store = new TreeStore (fileCol, nameCol, bankCol, patchCol, presetCol, namePresetCol);
 			sfList.DataSource = store;
 			//sfList.Columns.Add ("File", fileCol);
 			//sfList.Columns.Add ("Name", nameCol);
@@ -91,8 +91,6 @@ namespace Commons.Music.SoundFontPlayer
 			sfList.Columns.Add ("Patch", patchCol);
 			//sfList.Columns.Add ("Preset", presetCol);
 			sfList.Columns.Add ("Name/Preset", namePresetCol);
-			sfList.Columns.Add ("Prog.No.", progNumCol);
-			sfList.Columns.Add ("Inst", instCol);
 			
 			update_soundfonts = () => {
 				store.Clear ();
@@ -108,20 +106,6 @@ namespace Commons.Music.SoundFontPlayer
 							patchCol, preset.PatchNumber,
 							presetCol, preset.Name,
 							namePresetCol, sf.Entity.FileInfo.BankName + " / " + preset.Name);
-						/*
-						foreach (var gen in preset.Zones.SelectMany (z => z.Generators.Where (g => g.GeneratorType == GeneratorEnum.Instrument).OrderBy (g => g.HighByteAmount).ThenBy (g => g.LowByteAmount))) {
-							var node = store.AddNode ();
-							node.SetValues (
-								fileCol, sf.FullPath, nameCol,
-								sf.Entity.FileInfo.BankName,
-								bankCol, preset.Bank,
-								patchCol, preset.PatchNumber,
-								presetCol, preset.Name,
-								namePresetCol, sf.Entity.FileInfo.BankName + " / " + preset.Name,
-								progNumCol, gen.HighByteAmount * 0x100 + gen.LowByteAmount,
-								instCol, gen.Instrument?.Name);
-						}
-						*/
 					}
 				}
 			};
