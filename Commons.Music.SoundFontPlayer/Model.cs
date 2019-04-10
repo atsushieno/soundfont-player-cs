@@ -132,6 +132,7 @@ namespace Commons.Music.SoundFontPlayer
 			
 			if (output != null && item.File != prevItem.File) {
 				output.CloseAsync ();
+				keyon_flags = new bool [128];
 			}
 
 			if (prevItem?.File != item.File) {
@@ -143,11 +144,17 @@ namespace Commons.Music.SoundFontPlayer
 				output = access.OpenOutputAsync (access.Outputs.First ().Id).Result;
 			}
 
-			int ch = item.Instrument >= 128 ? 9 : 0;
+			int ch = item.Bank >= 128 ? 9 : 0;
 
+			/*
 			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelect, (byte) (item.Bank / 0x80)}, 0, 3, 0);
 			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelectLsb, (byte) (item.Bank % 0x80)}, 0, 3, 0);
 			output.Send (new byte[] {(byte) (MidiEvent.Program + ch), (byte) (item.Instrument % 128)}, 0, 2, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.Volume, 120}, 0, 3, 0);
+			*/
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelect, (byte) (item.Bank / 0x80)}, 0, 3, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.BankSelectLsb, (byte) (item.Bank % 0x80)}, 0, 3, 0);
+			output.Send (new byte[] {(byte) (MidiEvent.Program + ch), (byte) (item.Patch % 128)}, 0, 2, 0);
 			output.Send (new byte[] {(byte) (MidiEvent.CC + ch), MidiCC.Volume, 120}, 0, 3, 0);
 		}
 
@@ -158,7 +165,7 @@ namespace Commons.Music.SoundFontPlayer
 			if (output == null)
 				return;
 
-			int ch = SelectedSoundItem.Instrument >= 128 ? 9 : 0;
+			int ch = SelectedSoundItem.Bank >= 128 ? 9 : 0;
 			
 			if (keyon_flags [key])
 				output.Send (new byte[]{(byte) (MidiEvent.NoteOn + ch), (byte) key, 0}, 0, 3, 0);

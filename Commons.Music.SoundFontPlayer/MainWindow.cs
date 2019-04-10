@@ -39,13 +39,16 @@ namespace Commons.Music.SoundFontPlayer
 			top.PackStart (CreateSoundFontListPanel (), true);
 
 			string [] noteNames = {"c", "c+", "d", "d+", "e", "f", "f+", "g", "g+", "a", "a+", "b"};
-			var keys = new HBox ();
-			for (int i = 24; i < 48; i++) {
-				var b = new Button ($"{i / 12}{noteNames [i % 12]}");
-				b.Clicked += (o, e) => PlayNote (i);
-				keys.PackStart (b);
+			for (int r = 0; r < 4; r++) {
+				var keys = new HBox ();
+				for (int i = 0; i < 24; i++) {
+					var b = new Button ($"{i / 12 + 2 * r}{noteNames [i % 12]}") {Tag = r * 24 + i, WidthRequest = 48};
+					b.Clicked += (o, e) => PlayNote ((int) b.Tag);
+					keys.PackStart (b);
+				}
+
+				top.PackStart (keys);
 			}
-			top.PackStart (keys);
 
 			Content = top;
 		}
