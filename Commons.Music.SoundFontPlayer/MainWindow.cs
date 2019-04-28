@@ -87,8 +87,8 @@ namespace Commons.Music.SoundFontPlayer
 			sfList.DataSource = store;
 			//sfList.Columns.Add ("File", fileCol);
 			//sfList.Columns.Add ("Name", nameCol);
-			sfList.Columns.Add ("Bank", bankCol);
 			sfList.Columns.Add ("Patch", patchCol);
+			sfList.Columns.Add ("Bank", bankCol);
 			//sfList.Columns.Add ("Preset", presetCol);
 			sfList.Columns.Add ("Name/Preset", namePresetCol);
 			
@@ -97,7 +97,7 @@ namespace Commons.Music.SoundFontPlayer
 				foreach (var sf in model.LoadedSoundFonts)
 					sf.Load ();
 				foreach (var sf in model.LoadedSoundFonts.Where (_ => _.Entity != null)) {
-					foreach (var preset in sf.Entity.Presets.OrderBy (p => p.Bank).ThenBy (p => p.PatchNumber)) {
+					foreach (var preset in sf.Entity.Presets.OrderBy (p => p.PatchNumber).ThenBy (p => p.Bank)) {
 						var node = store.AddNode ();
 						node.SetValues (
 							fileCol, sf.FullPath, 
