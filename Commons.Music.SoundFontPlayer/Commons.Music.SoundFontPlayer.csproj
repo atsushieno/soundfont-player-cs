@@ -11,7 +11,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Commons.Music.SoundFontPlayer</RootNamespace>
     <AssemblyName>Commons.Music.SoundFontPlayer</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -46,12 +46,12 @@
       <HintPath>..\packages\NAudio.1.9.0-preview2\lib\net35\NAudio.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NFluidsynth, Version=1.0.7038.27709, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\nfluidsynth.0.1.0\lib\net40\NFluidsynth.dll</HintPath>
+    <Reference Include="NFluidsynth, Version=0.2.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\nfluidsynth.0.2.2\lib\netstandard2.0\NFluidsynth.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NFluidsynth.MidiAccess, Version=1.0.7038.27710, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\packages\nfluidsynth.0.1.0\lib\net40\NFluidsynth.MidiAccess.dll</HintPath>
+    <Reference Include="NFluidsynth.MidiAccess, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\nfluidsynth.0.2.2\lib\netstandard2.0\NFluidsynth.MidiAccess.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
