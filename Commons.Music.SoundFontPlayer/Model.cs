@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.IsolatedStorage;
 using System.Linq;
 using System.Runtime.Serialization.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Commons.Music.Midi;
 using NFluidsynth.MidiManager;
@@ -173,7 +174,7 @@ namespace Commons.Music.SoundFontPlayer
 			keyon_flags [key] = true;
 			if (lengthInMilliseconds > 0)
 				Task.Run (() => {
-					Task.Delay (lengthInMilliseconds);
+					Thread.Sleep (lengthInMilliseconds);
 					if (keyon_flags [key]) // might be already turned off
 						output.Send (new byte[]{(byte)(MidiEvent.NoteOn + ch), (byte) key, 0}, 0, 3, 0);
 					keyon_flags [key] = false;
